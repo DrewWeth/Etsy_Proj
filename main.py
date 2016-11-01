@@ -1,4 +1,4 @@
-
+from input_error import *
 import sys
 import manager
 # start 18:20
@@ -6,18 +6,9 @@ import manager
 file_name = "sample_in.txt"
 user_input_errors = []
 
-class InputError(Exception):
-    def __init__(self, *args):
-        self.value = ""
-        # TODO: Rewrite joining tuple into string
-        for val in args:
-            self.value += str(val)
-    def __str__(self):
-        return repr(self.value)
-
 def main():
     manager.Manager.instance = manager.Manager() # Sets up manager
-    read_input()
+    # read_input()
     main_thread()
 
 
@@ -41,11 +32,12 @@ def process_user_input(line):
 def sipher_command(line):
     raw_commands = line.split(" ")
     # print(raw_commands)
-    if len(raw_commands) < 3:
+    if len(raw_commands) < 2:
         raise InputError('Command needs more commands. Type help for examples.')
 
     # TODO Make commands lower case standard.
     # Process main commands
+    raw_commands[0] = raw_commands[0].lower()
     if sanitize_command(raw_commands, ['add', 'list', 'listen'], 0) == True:
         funcdict[raw_commands[0]](raw_commands)
     else:
@@ -86,7 +78,6 @@ def get_album_info(raw_commands, subcommand_index):
     by_index = subcommand_index + count
     # TODO Can check to make sure by_index has value "by"
     artist_name, count = next_input(raw_commands, by_index + 1)
-    manager.Manager.instance.add_album(album_name, artist_name)
     return [album_name, artist_name]
 
 # get_track_info takes an array of strings and a starting index and returns info for a track
@@ -106,6 +97,9 @@ def get_track_info(raw_commands, subcommand_index):
 # If there's no quote, it returns the next value
 def next_input(raw_commands, start_index):
     covers = 0
+    if start_index >= len(raw_commands):
+        raise InputError("Not enough information")
+        return
     if raw_commands[start_index].startswith("\""): # Includes quotes
         for i in range(start_index, len(raw_commands)):
             covers += 1
@@ -142,43 +136,69 @@ def command_list(raw_commands):
         else:
             print "ERR: command_list top"
     else:
-        valid_commands = ['albums', 'tracks']
+        valid_commands = ['albums', 'tracks', 'artists']
         if sanitize_command(raw_commands, valid_commands, 1) == False:
             raise InputError("Sub command (", raw_commands[1], ") is invalid. Use valid commands: ", valid_commands)
         desired_category = raw_commands[1]
 
         if desired_category == 'albums':
             result = get_album_info(raw_commands, 1)
-            # manager.Manager.instance.list_artists(desired_count)
+            manager.Manager.instance.list_albums(result)
         elif desired_category == 'tracks':
             result = get_track_info(raw_commands, 1)
-            # manager.Manager.instance.list_top_tracks(desired_count)
+            manager.Manager.instance.list_tracks(result)
+        elif desired_category == 'artists':
+            manager.Manager.instance.list_artists()
         else:
             print "ERR: command_list normal", raw_commands
 
 
 def command_listen(raw_commands):
-    return
+    if len(raw_commands) < 4:
+        raise InputError("Command usage: listen to 'song' on 'album' by 'artist'")
+    track_values = get_track_info(raw_commands, 2)
+    manager.Manager.instance.listen_to(track_values)
+
 
 def main_thread():
-    # while True:
-    try:
-        # TODO: raw_input is < Python 3.0
-        # user_input = raw_input("Enter input:\n")
-        # user_input = 'add artist "a hello"'
-        # user_input = 'add album album by artist'
-        # user_input = 'add album "awesome album" by artist'
-        # user_input = 'add track "track" on "awesome album" by artist'
-        user_input = "list top 3 tracks"
+    # user_input = 'add artist "a hello"'
+    # user_input = 'add album album by artist'
+    # user_input = 'add album "awesome album" by artist'
+    # user_input = 'add track "track" on "awesome album" by artist'
+    # user_input = "list top 3 tracks"
+    # user_input='list tracks on "Not a real album" by "Smiling Lemurs"'
 
+    automated = ['add artist bob',
+    'add album foo by bob',
+    'list albums by bob',
+    'add track "sunday blues" on foo by bob',
+    'add track "crushed heart" on foo by bob',
+    'add track "rock on" on foo by bob',
+    'list tracks on foo by bob',
+    'listen to "sunday blues" on foo by bob',
+    'list top 3 tracks',
+    'add artist "Smiling Lemurs"',
+    'add album "Sunbeams and Snowdrifts" by "Smiling Lemurs"',
+    'list top 3 albums',
+    'list top 3 artists']
+
+    for user_input in automated:
         user_input = str(user_input.strip())
         process_user_input(user_input.rstrip("\n"))
-    except InputError as e:
-        print "Input Error:", e.value
-        sys.exc_clear()
-    except:
-        print "Unexpected error:", sys.exc_info()[0]
-        raise
+
+    while True:
+        try:
+            # TODO: raw_input is < Python 3.0
+            user_input = raw_input("Enter input:\n")
+
+            user_input = str(user_input.strip())
+            process_user_input(user_input.rstrip("\n"))
+        except InputError as e:
+            print "Input Error:", e.value
+            sys.exc_clear()
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            raise
 
 # Dictionary to functions
 funcdict = {
