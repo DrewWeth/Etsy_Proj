@@ -21,7 +21,7 @@ A file with sample input, `sample_in.txt`, is attached for your convenience.
 ### Guidelines
 * You can use whatever language you like.
 * Do not use a database to store the library. Store it in memory.
-* You can use any external libraries you want as long as they don't directly implement the solution. 
+* You can use any external libraries you want as long as they don't directly implement the solution.
 * Even though this application is simple, we're looking for a demonstration of the organization, readability, and correctness. Treat this as if it were "production-ready code".
 * That said, don't go off the deep end. This is just a homework assignment. You should be able to finish it in an evening. Please don't work on it more than two evenings -- your time is more valuable than that.
 * Reach out if you have any questions.
