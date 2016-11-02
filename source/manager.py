@@ -17,15 +17,15 @@ class Manager:
 
     def binary_search(self, L, target):
         # Lazily sort artists when you need to. Could use sorted collection, but requires external dependency
-        if self.artists_is_sorted == False:
-            self.artists.sort(key=lambda x: x.name)
-            self.artists_is_sorted = True
+        # if self.artists_is_sorted == False:
+        self.artists.sort(key=lambda x: x.name)
+            # self.artists_is_sorted = True
 
         start = 0
         end = len(L) - 1
         while start <= end:
-            middle = (start + end)/ 2
-            midpoint = L[int(middle)]
+            middle = int((start + end)/ 2)
+            midpoint = L[middle]
             if midpoint.name > target:
                 end = middle - 1
             elif midpoint.name < target:
@@ -61,6 +61,7 @@ class Manager:
         album = artist.albums[album_name]
         album.tracks[track_name] = new_track # Connection from album to track
         new_track.album = album # Connection from track to album
+        new_track.artist = artist # Connection from track to artist. Maybe unecessary
         return new_track
 
     # Sorts tracks by play count and prints 'count' number of results. Prints all results if 'count' < 0
@@ -68,7 +69,7 @@ class Manager:
         sorted_tracks = sorted(self.tracks, key=attrgetter('play_count'), reverse=True)
         desired_range = appropriate_range(sorted_tracks, count)
         for i, track in enumerate(desired_range):
-            print(i+1, "Track plays:", track.play_count, track.name)
+            print(i+1, "Track plays:", track.play_count, "\"", track.name, "\"", "by", track.album.artist.name)
         return desired_range
 
     def aggregate_album_plays(self, album):
@@ -79,7 +80,7 @@ class Manager:
 
     def list_top_artists(self, count):
         unsorted_artists = [self.aggregate_artist_plays(artist) for artist in self.artists]
-        unsorted_artists.sort(key=lambda x: x[1], reverse=True)
+        unsorted_artists = sorted(unsorted_artists, key=lambda x: x[1], reverse=True)
         desired_range = appropriate_range(unsorted_artists, count)
         for idx,artist_data in enumerate(desired_range):
             print(idx+1, "Artist Plays", artist_data[1], artist_data[0].name)

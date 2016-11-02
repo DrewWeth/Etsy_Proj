@@ -1,14 +1,16 @@
-from __future__ import print_function # Backwards Compatibility: Ensures that built in print function from <3.0 Python prints string instead of tuple.
-from input_error import *
+# !/usr/bin/python
+from __future__ import print_function # Backwards Compatibility: Ensures that built in print function from <3.0 Python prints string instead of tupleself.
 from manager import *
+from input_error import *
 from extractor import *
-import sys
+import sys, os
 
-file_name = "sample_in.txt"
+script_dir = os.path.dirname(__file__) #<-- absolute dir the script is in
+rel_path = "sample_in.txt"
+file_name = os.path.join(script_dir, rel_path)
 
 def main():
     Manager.instance = Manager() # Sets up manager
-    # read_input()
     main_thread()
 
 def educate_this_user():
@@ -43,7 +45,12 @@ def process_user_input(line):
 def read_input():
     with open(file_name) as f:
         for line in f:
-            sipher_command(line.rstrip("\n"))
+            try:
+                print(line.rstrip("\n"))
+                sipher_command(line.rstrip("\n"))
+            except InputError as e:
+                print(hilite("Input Error:", -1, True), e.value)
+                pass
 
 def sipher_command(line):
     raw_commands = line.split(" ") # Main data structure used to interpret user data.
@@ -157,27 +164,31 @@ def run_test():
     # for user_input in automated:
     #     user_input = str(user_input.strip())
     #     process_user_input(user_input.rstrip("\n"))
+    return
 
 def main_thread():
+    has_read_from_file = False
     run_test()
+    if len(sys.argv) > 1:
+        file_name = sys.argv[1]
+
     print("Welcome to Music Manager. Type help to get started or", hilite("quit", 1, True) ,"to quit, or", hilite("help", 1, True), "for help.")
     while True:
         try:
+            if has_read_from_file == False: # Read in sample in file
+                has_read_from_file = True
+                read_input()
             # raw_input was renamed to input in Python3.0, this allows support for 2.7 which is widely and 2.6 which is stock on Mac machines.
             try: user_input = raw_input("")
             except NameError:
                 pass
                 user_input = input("")
 
-            user_input = str(user_input.rstrip("\n").strip().decode('utf-8')) # Strip newline, strip outter tabs and spaces, ensure utf-8
+            user_input = str(user_input.rstrip("\n").strip()) # Strip newline, strip outter tabs and spaces
             process_user_input(user_input)
         except InputError as e:
             print(hilite("Input Error:", -1, True), e.value)
-            sys.exc_clear()
-        except:
-            sys.exit(1)
-            # print("Unexpected error:", sys.exc_info()[0])
-            # raise
+            pass
 
 # Dictionary to functions
 funcdict = {
