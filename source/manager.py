@@ -17,9 +17,9 @@ class Manager:
 
     def binary_search(self, L, target):
         # Lazily sort artists when you need to. Could use sorted collection, but requires external dependency
-        # if self.artists_is_sorted == False:
-        self.artists.sort(key=lambda x: x.name)
-            # self.artists_is_sorted = True
+        if self.artists_is_sorted == False:
+            self.artists.sort(key=lambda x: x.name)
+            self.artists_is_sorted = True
 
         start = 0
         end = len(L) - 1
