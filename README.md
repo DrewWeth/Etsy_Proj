@@ -13,8 +13,8 @@ This program has been testing and works with `Python 3.5.2`, `Python 2.7.10`, an
 `git clone https://github.com/DrewWeth/Etsy_Proj`
 2. Change directory to project
 `cd Etsy_Proj`
-3. Run main Python script
-`python main.py`
+3. Run main Python script. The main script is in the source folder to keep the root directory cleaner.
+`python source/main.py`
 See usage section below view commands
 
 ## Usage
