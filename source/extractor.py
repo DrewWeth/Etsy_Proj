@@ -1,8 +1,7 @@
-from input_error import *
+from input_error import InputError
 # This file contains functions that help extract data from either raw strings or the raw_command data structure
 
-# sanitize_command: Makes sure the value of raw_commands at the index 'index' exists in the list.
-# Given sanitation is on commands, sanitize_command also forces downcast for consistency
+# sanitize_command: Returns true iff the a valid command exists at the index of raw_commands in all lowercase
 def sanitize_command(raw_commands, valid_commands, index):
     if index >= len(raw_commands):
         return False
@@ -12,15 +11,16 @@ def sanitize_command(raw_commands, valid_commands, index):
     else:
         return False
 
-# get_artist_info: Given the raw_commands data structure, and the start of artist data, it extracts artist name and counts how many elements it took to do so
+# get_artist_info: Given the raw_commands data structure, and the start of artist
+# data, it extracts artist name and how many elements were joined to get the artist name.
 def get_artist_info(raw_commands, subcommand_index):
     artist_name, count = next_input(raw_commands, subcommand_index)
     if count < 0:
         raise InputError("Need more info. Please include artist name")
     return artist_name, count
 
-# get_album_info: Takes an array of strings and a starting index and returns info for an album
-# by sequentially searching for data
+# get_album_info: Takes an array of strings and a starting index and returns
+# the album name and artist name or raises an error.
 def get_album_info(raw_commands, subcommand_index):
     album_name, count = next_input(raw_commands, subcommand_index)
     if count < 0:
@@ -32,8 +32,8 @@ def get_album_info(raw_commands, subcommand_index):
         raise InputError("Need more info. Please include 'by' and the 'artists name' after the album name")
     return [album_name, artist_name]
 
-# get_track_info: Takes an array of strings and a starting index and returns info for a track
-# by sequentially searching for data
+# get_track_info: Takes an array of strings and a starting index and returns
+# tack name, album_name, and artist_name
 def get_track_info(raw_commands, subcommand_index):
     track_name, count = next_input(raw_commands, subcommand_index)
     if count < 0:
@@ -50,7 +50,7 @@ def get_track_info(raw_commands, subcommand_index):
     return [track_name, album_name, artist_name]
 
 # next_input: Gets the next value from the raw_command data structure given a starting index.
-# It returns an array of the value and number of elements joined to get value. [value, count]
+# It returns an array of the next value and number of elements joined to get value. [value, count]
 # If the array at starting index begins with a quote, it finds the end quote and joins the values.
 # If there's no quote, it returns the next value
 def next_input(raw_commands, start_index):

@@ -23,14 +23,14 @@ See usage section below view commands
 ## Usage
 This section details how to use this project after successfully completing step 3 from the [installing](#installing) section
 
-There are 3 main commands: add, list, and listen.
+There are 3 main commands: `add`, `list`, and `listen` which are detailed below. When inputting a track, album, or artist name double quotes can be emitting if the input is only one word.
 ####ADD
 The add command has 3 sub commands: artist, album, and track.
 Before adding an album, the artist must exist.
 Before adding a track, the album and artist must exist.
 * USAGE: `add artist bob`
-* USAGE: `add album The amazing race by bob`
-* USAGE: `add track The amazing race`
+* USAGE: `add album "The amazing race" by bob`
+* USAGE: `add track "Great song" on "The amazing race" by bob`
 
 ####LIST
 The list command has 3 subcommands and 1 optional value: artists, albums, tracks, and [top].
@@ -42,5 +42,4 @@ The list command has 3 subcommands and 1 optional value: artists, albums, tracks
 
 ####LISTEN
 This command increments the play count on a track. You must provide the track, album, and artist.
-* USAGE: `listen to song on album name by bob`
-
+* USAGE: `listen to "Song" on "Album name" by bob`

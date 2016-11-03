@@ -1,49 +1,26 @@
 from __future__ import print_function
-from input_error import *
+from input_error import InputError
 import artist, album, track
 # from bisect import bisect_left
 from operator import itemgetter, attrgetter, methodcaller
 
-class Manager:
-    instance = None # Maintains one instance of Manager as static variable
+class MusicDatastore:
+    instance = None # Maintains one instance of MusicDatastore as static variable
 
     def __init__(self):
-        self.artists = []
-        self.artists_is_sorted = False
+        self.artists = {} # Artists are mainly looked up, not listed
         self.albums = []
         self.tracks = []
-        # self.instance = self
-        # print self.instance
-
-    def binary_search(self, L, target):
-        # Lazily sort artists when you need to. Could use sorted collection, but requires external dependency
-        if self.artists_is_sorted == False:
-            self.artists.sort(key=lambda x: x.name)
-            self.artists_is_sorted = True
-
-        start = 0
-        end = len(L) - 1
-        while start <= end:
-            middle = int((start + end)/ 2)
-            midpoint = L[middle]
-            if midpoint.name > target:
-                end = middle - 1
-            elif midpoint.name < target:
-                start = middle + 1
-            else:
-                return midpoint
-        return None
 
     def add_artist(self,name):
         new_artist = artist.Artist(name)
-        self.artists.append(new_artist)
-        self.artists_is_sorted = False # For lazily sorting artists. Speeds up mass-adding of artists.
+        self.artists[name] = new_artist
         return new_artist
 
     def add_album(self, album_name, artist_name):
-        artist = self.binary_search(self.artists, artist_name) # Find instance of artist
-        if artist == None:
+        if artist_name not in self.artists:
             raise InputError('Artist not found. Please add artist')
+        artist = self.artists[artist_name] # Find instance of artist
         new_album = album.Album(album_name)
         self.albums.append(new_album)
         new_album.artist = artist # Album to artist connection
@@ -51,9 +28,9 @@ class Manager:
         return new_album
 
     def add_track(self, track_name, album_name, artist_name):
-        artist = self.binary_search(self.artists, artist_name) # Find instance of artist
-        if artist == None:
+        if artist_name not in self.artists:
             raise InputError('Artist not found. Please add artist')
+        artist = self.artists[artist_name]
         new_track = track.Track(track_name, album_name, artist_name)
         self.tracks.append(new_track)
         if album_name not in artist.albums:
@@ -69,7 +46,7 @@ class Manager:
         sorted_tracks = sorted(self.tracks, key=attrgetter('play_count'), reverse=True)
         desired_range = appropriate_range(sorted_tracks, count)
         for i, track in enumerate(desired_range):
-            print(i+1, "Track plays:", track.play_count, "\"", track.name, "\"", "by", track.album.artist.name)
+            print(i+1, "Track plays:", track.play_count, "- \"", track.name, "\"", "by", track.album.artist.name)
         return desired_range
 
     def aggregate_album_plays(self, album):
@@ -79,11 +56,11 @@ class Manager:
         return [album, plays]
 
     def list_top_artists(self, count):
-        unsorted_artists = [self.aggregate_artist_plays(artist) for artist in self.artists]
+        unsorted_artists = [self.aggregate_artist_plays(self.artists[artist_key]) for artist_key in self.artists]
         unsorted_artists = sorted(unsorted_artists, key=lambda x: x[1], reverse=True)
         desired_range = appropriate_range(unsorted_artists, count)
         for idx,artist_data in enumerate(desired_range):
-            print(idx+1, "Artist Plays", artist_data[1], artist_data[0].name)
+            print(idx+1, "Artist plays:", artist_data[1], "-", artist_data[0].name)
         return desired_range
 
     def aggregate_artist_plays(self, artist):
@@ -97,13 +74,13 @@ class Manager:
         unsorted_albums.sort(key=lambda x: x[1], reverse=True)
         desired_range = appropriate_range(unsorted_albums, count)
         for idx,album_data in enumerate(desired_range):
-            print(idx+1, "Album Plays", album_data[1], album_data[0].name)
+            print(idx+1, "Album plays:", album_data[1], "-", album_data[0].name)
         return desired_range
 
     def list_tracks(self, track_values):
-        artist = self.binary_search(self.artists, track_values[2])
-        if artist == None:
-            raise InputError("Artist does not exist")
+        if track_values[2] not in self.artists:
+            raise InputError('Artist not found. Please add artist')
+        artist = self.artists[track_values[2]] # Find instance of artist
         if track_values[1] not in artist.albums:
             raise InputError("Album does not exist")
         album = artist.albums[track_values[1]]
@@ -112,21 +89,20 @@ class Manager:
 
     def list_artists(self):
         # print "Listing artists"
-        for idx, artist in enumerate(self.artists):
-            print(idx+1, artist.name)
+        for idx, artist_name in enumerate(self.artists):
+            print(idx+1, self.artists[artist_name].name)
 
     def list_albums(self, album_values):
-        # print "List albums for",album_values[1]
-        artist = self.binary_search(self.artists, album_values[1])
-        if artist == None:
-            raise InputError("Artist does not exist")
+        if album_values[1] not in self.artists:
+            raise InputError('Artist not found. Please add artist')
+        artist = self.artists[album_values[1]] # Find instance of artist
         for idx, album in enumerate(artist.albums):
             print(idx+1, album)
 
     def locate_track(self, track_values):
-        artist = self.binary_search(self.artists, track_values[2])
-        if artist == None:
-            raise InputError("Artist does not exist. Check spelling.")
+        if track_values[2] not in self.artists:
+            raise InputError('Artist not found. Check spelling or add artist')
+        artist = self.artists[track_values[2]] # Find instance of artist
         if track_values[1] not in artist.albums:
             raise InputError("Album does not exist. Check spelling.")
         album = artist.albums[track_values[1]]
@@ -145,12 +121,8 @@ class Manager:
         'add_album':add_album
     }
 
-    # Returns singleton in the form of static value a manaager instance
-    def manager():
-        return instance
-
     def clear():
-        self.artists = []
+        self.artists = {}
         self.albums = []
         self.tracks = []
 
@@ -162,3 +134,11 @@ def appropriate_range(whole_arr, count):
     else:
         appropriate_range = whole_arr[:count]
     return appropriate_range
+
+# Returns singleton in the form of static value a manaager instance
+def get_music_datastore():
+    if MusicDatastore.instance != None:
+        return MusicDatastore.instance
+    else:
+        MusicDatastore.instance = MusicDatastore() # Sets up MusicDatastore
+        return MusicDatastore.instance
