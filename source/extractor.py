@@ -26,7 +26,6 @@ def get_album_info(raw_commands, subcommand_index):
     if count < 0:
         raise InputError("Need more info. Please include album name")
     by_index = subcommand_index + count
-    # TODO Can check to make sure by_index has value "by"
     artist_name, count = next_input(raw_commands, by_index + 1)
     if count < 0:
         raise InputError("Need more info. Please include 'by' and the 'artists name' after the album name")
@@ -39,7 +38,6 @@ def get_track_info(raw_commands, subcommand_index):
     if count < 0:
         raise InputError("Need more info. Please include track name")
     on_index = subcommand_index + count
-    # TODO Can check to make sure by_index has value "by"
     album_name, count = next_input(raw_commands, on_index + 1)
     if count < 0:
         raise InputError("Need more info. Please include 'on' and 'album name' after the track name")
